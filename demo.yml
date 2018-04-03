@@ -1,0 +1,47 @@
+---
+
+- name: Restore database snapshot
+  hosts: localhost
+  connection: local
+
+  tasks:
+
+    - name: Identify latest production cluster automated snapshot
+      rds_cluster_snapshot_facts:
+        cluster_id: "original-cluster-name"
+        snapshot_type: automated
+        status: available
+        sort: snapshot_create_time
+        sort_order: descending
+        sort_end: 1
+      tags: find-snapshot
+      register: snapshot
+
+    - name: Launch cluster from snapshot
+      rds_cluster:
+        cluster_id: "new-cluster-name"
+        snapshot_arn: "{{ snapshot.results[0].db_cluster_snapshot_arn }}"
+        state: present
+        subnet_group: "my-subnet-group"
+        vpc_security_group_ids:
+          - "my-security-group"
+        wait: yes
+      register: cluster
+      tags: cluster
+
+    - name: Create DB instance
+      rds_cluster_instance:
+        apply_immediately: yes
+        cluster_id: "{{ cluster.result.DBCluster.DBClusterIdentifier }}"
+        instance_id: "{{ cluster.result.DBCluster.DBClusterIdentifier }}-001"
+        instance_type: db.t2.small
+        monitoring_interval: 60
+        monitoring_role_arn: "my-monitoring-arn"
+        multi_az: no
+        state: present
+        subnet_group: "my-subnet-group"
+        wait: yes
+      register: instance
+      tags: instance
+
+# vim: set ft=ansible ts=2 sts=2 sw=2 expandtab:
