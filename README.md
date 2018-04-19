@@ -6,7 +6,7 @@ These are drop-in modules for Ansible 2.3+ which provide the following:
 - **rds_cluster_instance** - can create a cluster instance for an existing cluster
 - **rds_cluster_snapshot_facts** - can search and return details about RDS cluster snapshots
 
-These modules are specifically for working with RDS Clusters, and have only been tested with Aurora.
+These modules are specifically for working with RDS Clusters, and have only been tested with Aurora MySQL.
 
 For regular RDS instances you should look at Ansible's built-in modules.
 
